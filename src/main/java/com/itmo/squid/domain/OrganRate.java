@@ -33,8 +33,7 @@ public class OrganRate {
     private Long price;
 
     @OneToMany(mappedBy = "organ", fetch = FetchType.LAZY)
-    private Set<OrganBlackMarket> goods;
-
+    private Set<MarketGood> goods;
 
     enum OrganType {
         BRAIN, HEART, LUNGS, LIVER, KIDNEYS

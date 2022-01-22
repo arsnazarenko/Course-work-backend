@@ -10,10 +10,10 @@ import javax.validation.constraints.NotNull;
 
 @NoArgsConstructor
 @Entity
-@Table(name = "organ_black_market")
+@Table(name = "market_good")
 @Data
 @EqualsAndHashCode(of = {"id"})
-public class OrganBlackMarket {
+public class MarketGood {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

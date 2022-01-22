@@ -3,7 +3,6 @@ package com.itmo.squid.domain;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -50,7 +49,7 @@ public class Participant {
     private Set<Bet> bets;
 
     @OneToMany(mappedBy = "participant", fetch = FetchType.LAZY)
-    private Set<OrganBlackMarket> goods;
+    private Set<MarketGood> goods;
 
 
 
