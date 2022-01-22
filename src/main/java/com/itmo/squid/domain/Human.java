@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 
-@JsonIgnoreProperties({"hibernateLazyInitializer"})
+//@JsonIgnoreProperties({"hibernateLazyInitializer"})
 @NoArgsConstructor
 @Entity
 @Table(name = "human")
@@ -18,6 +18,7 @@ import java.util.Date;
 @EqualsAndHashCode(of = {"id"})
 public class Human {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
@@ -29,11 +30,14 @@ public class Human {
     private String job;
 
     @NotNull
-    @Column(name = "date_of_birth")
+    @Column
     private Date dateOfBirth;
 
-    @OneToOne(optional = false, mappedBy = "human")
-    private Vip vip;
+//    @OneToOne(optional = false, mappedBy = "human")
+//    private Vip vip;
+//
+//    @OneToOne(optional = false, mappedBy = "human")
+//    private Participant participant;
 
 
 }

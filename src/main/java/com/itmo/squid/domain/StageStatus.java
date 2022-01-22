@@ -3,8 +3,10 @@ package com.itmo.squid.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.Set;
 
-@JsonIgnoreProperties({"hibernateLazyInitializer"})
+//@JsonIgnoreProperties({"hibernateLazyInitializer"})
 @NoArgsConstructor
 @Entity
 @Table(name = "stage_status")
@@ -13,9 +15,20 @@ import javax.persistence.*;
 public class StageStatus {
 
     @Id
-    @GeneratedValue(generator = "stage_status_id_seq")
-    Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column
-    String status;
+    @NotNull
+    @Enumerated(value = EnumType.STRING)
+    private StatusType status;
+
+    @OneToMany(mappedBy = "status", fetch = FetchType.LAZY)
+    private Set<Stage> stages;
+
+
+
+    enum StatusType {
+        CONTINUOUS, END, NOT_OPEN
+    }
 }

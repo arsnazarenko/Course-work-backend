@@ -1,52 +1,55 @@
 package com.itmo.squid.domain;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-
 import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.HashSet;
 import java.util.Set;
 
-@JsonIgnoreProperties({"hibernateLazyInitializer"})
-@ToString
+//@JsonIgnoreProperties({"hibernateLazyInitializer"})
 @Entity
 @NoArgsConstructor
 @Table(name = "stage")
 @Data
 @EqualsAndHashCode(of = {"id"})
 public class Stage {
+
     @Id
-    @GeneratedValue(generator = "stage_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column
     @NotNull
-    @NotEmpty
     private String name;
 
     @Column
     @NotNull
-    @NotEmpty
     private String description;
 
     @Column
+    @Min(0)
     private Integer amountOfDeath;
 
     @Column
     @NotNull
     private Boolean teamStage;
 
-    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name="status_id", nullable = false)
     private StageStatus status;
 
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "attribute_on_stage",
         joinColumns = @JoinColumn(name = "stage_id"),
         inverseJoinColumns = @JoinColumn(name = "attribute_id")
     )
     private Set<Attribute> attributes;
+
+
+    @OneToMany(mappedBy = "stage", fetch = FetchType.LAZY)
+    private Set<TeamOnStage> teams;
+
+    @OneToMany(mappedBy = "vip", fetch = FetchType.LAZY)
+    private Set<Bet> bets;
+
 }

@@ -15,11 +15,10 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(of = {"id"})
 public class Contraband {
     @Id
-    @GeneratedValue(generator = "contraband_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column
-    @NotEmpty
     @NotNull
     private String object;
 }

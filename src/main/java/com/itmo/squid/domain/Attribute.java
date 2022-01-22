@@ -5,7 +5,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.List;
+import javax.validation.constraints.NotNull;
+import java.util.Set;
 
 @Data
 @Entity
@@ -14,11 +15,16 @@ import java.util.List;
 @EqualsAndHashCode(of = {"id"})
 public class Attribute {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotNull
     @Column
     private String name;
 
-    @Column
-    @ManyToMany(mappedBy = "attributes", fetch = FetchType.LAZY)
-    private List<Stage> stages;
+    @ManyToMany
+    @JoinTable(name="attribute_on_stage",
+        joinColumns = @JoinColumn(name = "attribute_id"),
+        inverseJoinColumns = @JoinColumn(name = "stage_id"))
+    private Set<Stage> stages;
 }
