@@ -12,16 +12,15 @@ import com.itmo.squid.repo.DeathRepo;
 import com.itmo.squid.repo.ParticipantRepo;
 import com.itmo.squid.repo.StageRepo;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Controller
+@RestController
+@RequestMapping(value = "participant")
 public class ParticipantController {
 
     private final ParticipantRepo participantRepo;
@@ -47,11 +46,11 @@ public class ParticipantController {
     }
 
 
-    @GetMapping("{id}/kill")
+    @PostMapping("{id}/kill")
     public ParticipantRespDto kill(@PathVariable Long id, @RequestBody Map<String, String> description) {
         Stage stage = stageRepo.findStageByStatusEquals(StageStatus.CONTINUOUS).orElseThrow(ResourceNotFoundException::new);
         String descr = Optional.ofNullable(description.get("description")).orElseThrow(BadRequestException::new);
-        Participant participant = participantRepo.findParticipantByIdAndAlive(id, true).orElseThrow(BadRequestException::new);
+        Participant participant = participantRepo.findParticipantByIdAndIsAlive(id, true).orElseThrow(BadRequestException::new);
 
         participant.setAlive(false);
         stage.setAmountOfDeath(stage.getAmountOfDeath() + 1);
