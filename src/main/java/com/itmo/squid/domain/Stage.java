@@ -3,10 +3,11 @@ import lombok.*;
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.HashSet;
 import java.util.Set;
 
-//@JsonIgnoreProperties({"hibernateLazyInitializer"})
 @Entity
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "stage")
 @Data
@@ -26,30 +27,30 @@ public class Stage {
     private String description;
 
     @Column
+    @NotNull
     @Min(0)
     private Integer amountOfDeath;
 
     @Column
     @NotNull
-    private Boolean teamStage;
+    private Boolean isTeamStage;
 
-    @ManyToOne(optional = false, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name="status_id", nullable = false)
+    @Column
+    @NotNull
+    @Enumerated(value = EnumType.STRING)
     private StageStatus status;
 
-
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "attribute_on_stage",
         joinColumns = @JoinColumn(name = "stage_id"),
         inverseJoinColumns = @JoinColumn(name = "attribute_id")
     )
-    private Set<Attribute> attributes;
+    private Set<Attribute> attributes = new HashSet<>();
 
+    @OneToMany(mappedBy = "stage", fetch = FetchType.EAGER)
+    private Set<TeamOnStage> teams = new HashSet<>();
 
-    @OneToMany(mappedBy = "stage", fetch = FetchType.LAZY)
-    private Set<TeamOnStage> teams;
-
-    @OneToMany(mappedBy = "vip", fetch = FetchType.LAZY)
-    private Set<Bet> bets;
+    @OneToMany(mappedBy = "vip", fetch = FetchType.EAGER)
+    private Set<Bet> bets = new HashSet<>();
 
 }

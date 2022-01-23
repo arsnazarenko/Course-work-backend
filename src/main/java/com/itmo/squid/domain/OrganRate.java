@@ -9,13 +9,14 @@ import org.hibernate.validator.constraints.UniqueElements;
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.HashSet;
 import java.util.Set;
 
 @NoArgsConstructor
 @Entity
 @Table(name = "organ_rate")
 @Data
-@EqualsAndHashCode(of = {"id", "organ"})
+@EqualsAndHashCode(of = {"id"})
 public class OrganRate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +24,6 @@ public class OrganRate {
 
     @NotNull
     @Column(unique = true)
-    @UniqueElements
     @Enumerated(value = EnumType.STRING)
     private OrganType organ;
 
@@ -33,9 +33,7 @@ public class OrganRate {
     private Long price;
 
     @OneToMany(mappedBy = "organ", fetch = FetchType.LAZY)
-    private Set<MarketGood> goods;
+    private Set<MarketGood> goods = new HashSet<>();
 
-    enum OrganType {
-        BRAIN, HEART, LUNGS, LIVER, KIDNEYS
-    }
+
 }

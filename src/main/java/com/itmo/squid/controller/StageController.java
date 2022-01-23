@@ -1,129 +1,105 @@
 package com.itmo.squid.controller;
 
-import com.itmo.squid.domain.Attribute;
-import com.itmo.squid.domain.Stage;
+import com.itmo.squid.domain.*;
+import com.itmo.squid.dto.MappingUtils;
+import com.itmo.squid.dto.StageReqDto;
+import com.itmo.squid.dto.StageRespDto;
+import com.itmo.squid.dto.TeamsDto;
 import com.itmo.squid.exception.BadRequestException;
 import com.itmo.squid.exception.ResourceNotFoundException;
 import com.itmo.squid.repo.AttributeRepo;
+import com.itmo.squid.repo.ParticipantRepo;
 import com.itmo.squid.repo.StageRepo;
-import com.itmo.squid.repo.StageStatusRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import com.itmo.squid.repo.TeamOnStageRepo;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("stage")
 public class StageController {
 
     private final StageRepo stageRepo;
-    private final StageStatusRepo stageStatusRepo;
     private final AttributeRepo attributeRepo;
+    private final ParticipantRepo participantRepo;
+    private final TeamOnStageRepo teamOnStageRepo;
 
-    @Autowired
-    public StageController(StageRepo stageRepo, StageStatusRepo stageStatusRepo, AttributeRepo attributeRepo) {
+    public StageController(StageRepo stageRepo, AttributeRepo attributeRepo, ParticipantRepo participantRepo, TeamOnStageRepo teamOnStageRepo) {
         this.stageRepo = stageRepo;
-        this.stageStatusRepo = stageStatusRepo;
         this.attributeRepo = attributeRepo;
+        this.participantRepo = participantRepo;
+        this.teamOnStageRepo = teamOnStageRepo;
     }
 
+
     @GetMapping
-    public List<Stage> list() {
-        return stageRepo.findAll();
+    public List<StageRespDto> list() {
+        return stageRepo.findAll().stream().map(MappingUtils::fromStageEntityToDto).collect(Collectors.toList());
     }
 
     @GetMapping("{id}")
-    public Stage getOne(@PathVariable(name = "id") Long id) {
-        return stageRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+    public StageRespDto getOne(@PathVariable(name = "id") Long id) {
+        return stageRepo.findById(id).map(MappingUtils::fromStageEntityToDto).orElseThrow(ResourceNotFoundException::new);
     }
 
     @PostMapping
-    public Stage create(@RequestBody Stage stage) {
-        stage.setStatus(stageStatusRepo.getById(Status.NOT_OPEN.id));
-        stage.setAmountOfDeath(0);
-        stage.setAttributes(new HashSet<>());
-        return stageRepo.save(stage);
-    }
-
-    @PostMapping("{id}/attributes")
-    public Set<Attribute> addAttribute(@PathVariable("id") Long id, @RequestBody Map<String, Long> attribute) {
-        Attribute attr = Optional.ofNullable(attribute.get("id"))
-                .flatMap(attributeRepo::findById)
-                .orElseThrow(BadRequestException::new);
-
-        return stageRepo.findById(id)
-                .map(v -> {
-                    v.getAttributes().add(attr);
-                    stageRepo.save(v);
-                    return v.getAttributes();
-                })
-                .orElseThrow(ResourceNotFoundException::new);
-    }
-
-    @DeleteMapping("{id}/attributes")
-    public boolean removeAttribute(@PathVariable("id") Long id, @RequestBody Map<String, Long> attribute) {
-        Attribute attr = Optional.ofNullable(attribute.get("id"))
-                .flatMap(attributeRepo::findById)
-                .orElseThrow(BadRequestException::new);
-
-        return stageRepo.findById(id)
-                .map(v -> {
-                    boolean result = v.getAttributes().remove(attr);
-                    stageRepo.save(v);
-                    return result;
-                })
-                .orElseThrow(ResourceNotFoundException::new);
-    }
-
-    @GetMapping("{id}/attributes")
-    public Set<Attribute> getAttributes(@PathVariable("id") Long id) {
-        return stageRepo.findById(id)
-                .map(Stage::getAttributes)
-                .orElseThrow(ResourceNotFoundException::new);
+    public StageRespDto create(@RequestBody StageReqDto stage) {
+        Stage newStage = MappingUtils.fromStageDtoToEntity(stage);
+        Set<Attribute> newAttributes = stage.getAttributesIds()
+                .stream()
+                .map(attributeRepo::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+        newStage.setAttributes(newAttributes);
+        return MappingUtils.fromStageEntityToDto(stageRepo.save(newStage));
     }
 
     @PutMapping("{id}/start")
-    public ResponseEntity<Stage> startStage(@PathVariable(name = "id") Long id) {
+    public ResponseEntity<StageRespDto> startStage(@PathVariable(name = "id") Long id, @RequestBody TeamsDto teams ) {
         Stage stage = stageRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
-        ResponseEntity<Stage> conStage = stageRepo.findAll().stream()
-                .filter(s -> s.getStatus().getId().equals(Status.CONTINUOUS.id))
-                .findFirst().map(s -> ResponseEntity.badRequest().body(s)).orElse(ResponseEntity.ok(null));
-        if (conStage.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
-            return conStage;
+        Optional<Stage> alreadyConStage = stageRepo.findStageByStatusEquals(StageStatus.CONTINUOUS);
+        if (alreadyConStage.isPresent()) {
+            return ResponseEntity.badRequest().body(MappingUtils.fromStageEntityToDto(alreadyConStage.get()));
         }
-
-        if (!stage.getStatus().getId().equals(Status.END.id)) {
-            stage.setStatus(stageStatusRepo.getById(Status.CONTINUOUS.id));
-            return ResponseEntity.ok(stageRepo.save(stage));
+        if (stage.getStatus() != StageStatus.END) {
+            toContinueStage(teams, stage);
+            return ResponseEntity.ok(MappingUtils.fromStageEntityToDto(stageRepo.save(stage)));
         } else {
-            return ResponseEntity.badRequest().body(stageRepo.save(stage));
+            return ResponseEntity.badRequest().body(MappingUtils.fromStageEntityToDto(stage));
         }
+    }
 
+    private void toContinueStage(TeamsDto teams, Stage stage) throws BadRequestException {
+        Set<TeamOnStage> stageTeams = stage.getTeams();
+        for (Set<Long> team: teams.getTeams()) {
+            Set<Participant> curTeam = team.stream().map(participantRepo::findById)
+                    .map(v -> {
+                        if (v.isPresent()) {
+                            return v.get();
+                        } else {
+                            throw new BadRequestException();
+                        }
+                    })
+                    .peek(p ->{
+                        if (!p.isAlive()) {
+                            throw new BadRequestException();
+                        }
+                    })
+                    .collect(Collectors.toSet());
+            TeamOnStage savedTeam = teamOnStageRepo.save(new TeamOnStage(null, stage, stage.getIsTeamStage() ? TeamType.TEAM : TeamType.PAIR, curTeam));
+            stageTeams.add(savedTeam);
+        }
+        stage.setStatus(StageStatus.CONTINUOUS);
     }
 
     @PutMapping("end")
-    public Stage endStage() {
-        return stageRepo.findAll().stream()
-                .filter(s -> s.getStatus().getId().equals(Status.CONTINUOUS.id))
-                .findFirst().map(s -> {
-                    s.setStatus(stageStatusRepo.getById(Status.END.id));
-                    return stageRepo.save(s);
-                })
+    public StageRespDto endStage() {
+        Stage conStage = stageRepo.findStageByStatusEquals(StageStatus.CONTINUOUS)
                 .orElseThrow(BadRequestException::new);
-    }
-
-
-    enum Status {
-        CONTINUOUS("continuous", 1L), END("end", 2L), NOT_OPEN("not_open", 3L);
-
-        final String statusAsStr;
-        final Long id;
-
-        Status(String statusAsStr, Long id) {
-            this.statusAsStr = statusAsStr;
-            this.id = id;
-        }
+        conStage.setStatus(StageStatus.END);
+        return MappingUtils.fromStageEntityToDto(stageRepo.save(conStage));
     }
 
 }

@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 @Table(name = "bet")
 @Data
 @EqualsAndHashCode(of = {"id"})
+
 public class Bet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

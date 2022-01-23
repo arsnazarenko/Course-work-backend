@@ -1,14 +1,18 @@
 package com.itmo.squid.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "participant")
 @Data
@@ -19,37 +23,39 @@ public class Participant {
     private Long id;
 
 
-    @OneToOne(optional = false, cascade = CascadeType.ALL)
-    @JoinColumn(name = "human_id")
-    Human human;
+    @NotNull
+    @Column
+    private String name;
+
+    @NotNull
+    @Column
+    private String job;
+
+    @NotNull
+    @Column
+    private Date dateOfBirth;
+
+    @Column
+    @NotNull
+    private Long debt;
 
 
     @Column
     @NotNull
     private boolean isAlive;
 
-    @Column
-    @NotNull
-    private Long debt;
-
-    @OneToOne(optional = true)
-    @JoinColumn(name = "contraband_id")
-    private Contraband contraband;
-
-
-
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "participant_in_team",
             joinColumns = @JoinColumn(name = "participant_id"),
             inverseJoinColumns = @JoinColumn(name = "team_id")
     )
-    private Set<TeamOnStage> teams;
+    private Set<TeamOnStage> teams = new HashSet<>();
 
     @OneToMany(mappedBy = "participant", fetch = FetchType.LAZY)
-    private Set<Bet> bets;
+    private Set<Bet> bets = new HashSet<>();
 
     @OneToMany(mappedBy = "participant", fetch = FetchType.LAZY)
-    private Set<MarketGood> goods;
+    private Set<MarketGood> goods = new HashSet<>();
 
 
 

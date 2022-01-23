@@ -1,14 +1,17 @@
 package com.itmo.squid.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.HashSet;
 import java.util.Set;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "team_on_stage")
 @Data
@@ -33,10 +36,8 @@ public class TeamOnStage {
             joinColumns = @JoinColumn(name = "team_id"),
             inverseJoinColumns = @JoinColumn(name = "participant_id")
     )
-    private Set<Participant> participants;
+    private Set<Participant> participants = new HashSet<>();
 
 
-    enum TeamType {
-        PAIR, TEAM
-    }
+
 }

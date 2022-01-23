@@ -1,5 +1,6 @@
 package com.itmo.squid.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "death")
 @Data
 @EqualsAndHashCode(of = {"id"})
@@ -27,15 +29,6 @@ public class Death {
 
     @Column
     @NotNull
-    @Enumerated(value = EnumType.STRING)
-    private ReasonType reason;
-
-    @Column
-    @NotNull
     private String description;
 
-
-    enum ReasonType {
-        FIGHT, SUICIDE, STAGE
-    }
 }
