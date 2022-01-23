@@ -64,14 +64,17 @@ public class StageController {
             return ResponseEntity.badRequest().body(MappingUtils.fromStageEntityToDto(alreadyConStage.get()));
         }
         if (stage.getStatus() != StageStatus.END) {
-            toContinueStage(teams, stage);
+            if (stage.getType() != TeamType.SINGLE) {
+                createStageTeams(teams, stage);
+            }
+            stage.setStatus(StageStatus.CONTINUOUS);
             return ResponseEntity.ok(MappingUtils.fromStageEntityToDto(stageRepo.save(stage)));
         } else {
             return ResponseEntity.badRequest().body(MappingUtils.fromStageEntityToDto(stage));
         }
     }
 
-    private void toContinueStage(TeamsDto teams, Stage stage) throws BadRequestException {
+    private void createStageTeams(TeamsDto teams, Stage stage) throws BadRequestException {
         Set<TeamOnStage> stageTeams = stage.getTeams();
         for (Set<Long> team: teams.getTeams()) {
             Set<Participant> curTeam = team.stream().map(participantRepo::findById)
@@ -88,10 +91,9 @@ public class StageController {
                         }
                     })
                     .collect(Collectors.toSet());
-            TeamOnStage savedTeam = teamOnStageRepo.save(new TeamOnStage(null, stage, stage.getIsTeamStage() ? TeamType.TEAM : TeamType.PAIR, curTeam));
+            TeamOnStage savedTeam = teamOnStageRepo.save(new TeamOnStage(null, stage, stage.getType(), curTeam));
             stageTeams.add(savedTeam);
         }
-        stage.setStatus(StageStatus.CONTINUOUS);
     }
 
     @PutMapping("end")

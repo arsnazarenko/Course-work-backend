@@ -4,6 +4,7 @@ import com.itmo.squid.domain.Death;
 import com.itmo.squid.domain.Participant;
 import com.itmo.squid.domain.Stage;
 import com.itmo.squid.domain.StageStatus;
+import com.itmo.squid.dto.KillRespDto;
 import com.itmo.squid.dto.MappingUtils;
 import com.itmo.squid.dto.ParticipantRespDto;
 import com.itmo.squid.exception.BadRequestException;
@@ -11,7 +12,6 @@ import com.itmo.squid.exception.ResourceNotFoundException;
 import com.itmo.squid.repo.DeathRepo;
 import com.itmo.squid.repo.ParticipantRepo;
 import com.itmo.squid.repo.StageRepo;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,8 +46,8 @@ public class ParticipantController {
     }
 
 
-    @PostMapping("{id}/kill")
-    public ParticipantRespDto kill(@PathVariable Long id, @RequestBody Map<String, String> description) {
+    @PutMapping("{id}/kill")
+    public KillRespDto kill(@PathVariable Long id, @RequestBody Map<String, String> description) {
         Stage stage = stageRepo.findStageByStatusEquals(StageStatus.CONTINUOUS).orElseThrow(ResourceNotFoundException::new);
         String descr = Optional.ofNullable(description.get("description")).orElseThrow(BadRequestException::new);
         Participant participant = participantRepo.findParticipantByIdAndIsAlive(id, true).orElseThrow(BadRequestException::new);
@@ -56,7 +56,8 @@ public class ParticipantController {
         stage.setAmountOfDeath(stage.getAmountOfDeath() + 1);
         deathRepo.save(new Death(null, participant, stage, descr));
         stageRepo.save(stage);
-        return MappingUtils.fromParticipantEntityToDto(participantRepo.save(participant));
+        ParticipantRespDto participantRespDto = MappingUtils.fromParticipantEntityToDto(participantRepo.save(participant));
+        return new KillRespDto(participantRespDto, stage.getId());
     }
 
 

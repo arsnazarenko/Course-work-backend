@@ -33,7 +33,8 @@ public class Stage {
 
     @Column
     @NotNull
-    private Boolean isTeamStage;
+    @Enumerated(EnumType.STRING)
+    private TeamType type;
 
     @Column
     @NotNull

@@ -20,11 +20,11 @@ public class StageRespDto {
     @NotNull
     private String description;
     @NotNull
-    private Boolean isTeamStage;
+    private TeamType type;
     @NotNull
     private StageStatus status;
     @NotNull
     private Set<Long> attributesIds;
-    @NotNull
+
     private Set<Set<Long>> teams;
 }

@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 @EqualsAndHashCode
@@ -22,9 +20,9 @@ public class StageReqDto {
     private String description;
 
     @NotNull
-    private Boolean isTeamStage;
+    private TeamType type;
 
-    @NotNull
+
     private Set<Long> attributesIds;
 
 }

@@ -12,14 +12,14 @@ public class MappingUtils {
 
     public static Stage fromStageDtoToEntity(StageReqDto stageReqDto) {
         return new Stage(null, stageReqDto.getName(), stageReqDto.getDescription(), 0,
-                stageReqDto.getIsTeamStage(), StageStatus.NOT_OPEN, new HashSet<>(), new HashSet<>(), new HashSet<>());
+                stageReqDto.getType(), StageStatus.NOT_OPEN, new HashSet<>(), new HashSet<>(), new HashSet<>());
     }
 
     public static StageRespDto fromStageEntityToDto(Stage stage) {
         return new StageRespDto(stage.getId(),
                 stage.getName(),
                 stage.getDescription(),
-                stage.getIsTeamStage(),
+                stage.getType(),
                 stage.getStatus(),
                 stage.getAttributes().stream().map(Attribute::getId).collect(Collectors.toSet()),
                 stage.getTeams().stream().map(t -> t.getParticipants().stream().map(Participant::getId).collect(Collectors.toSet())).collect(Collectors.toSet()));
