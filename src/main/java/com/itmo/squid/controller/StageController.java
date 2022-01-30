@@ -1,5 +1,4 @@
 package com.itmo.squid.controller;
-
 import com.itmo.squid.domain.*;
 import com.itmo.squid.dto.MappingUtils;
 import com.itmo.squid.dto.StageReqDto;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@CrossOrigin()
 @RestController
 @RequestMapping("stage")
 public class StageController {

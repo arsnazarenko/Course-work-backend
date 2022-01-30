@@ -1,6 +1,7 @@
 package com.itmo.squid.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.itmo.squid.domain.ReqType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,7 +14,9 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class ParticipantRespDto {
+public class ParticipantRequestDtoResponse {
+
+
     @NotNull
     private Long id;
 
@@ -31,7 +34,9 @@ public class ParticipantRespDto {
     private Long debt;
 
     @NotNull
-    private Boolean isAlive;
+    private Long userId;
 
+    @NotNull
+    private ReqType reqType;
 
 }

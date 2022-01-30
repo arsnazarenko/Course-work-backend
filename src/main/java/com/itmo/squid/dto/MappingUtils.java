@@ -36,6 +36,18 @@ public class MappingUtils {
                 participantReqDto.getDateOfBirth(), participantReqDto.getDebt(), participantReqDto.isAlive());
     }
 
+    public static ParticipantRequestDtoResponse fromParticipantRequestToPartReqDtoResponse(ParticipantRequest participantRequest) {
+        return new ParticipantRequestDtoResponse(participantRequest.getId(), participantRequest.getName(), participantRequest.getJob(), participantRequest.getDateOfBirth(), participantRequest.getDebt(), participantRequest.getUser().getId(), participantRequest.getType());
+    }
+
+    public static ParticipantRequest fromParticipantReqDtoToParticipantRequest(ParticipantRequestDto participantReqDto) {
+        return new ParticipantRequest(null, participantReqDto.getName(), participantReqDto.getJob(), participantReqDto.getDateOfBirth(), participantReqDto.getDebt(), ReqType.NONE,  null);
+    }
+
+    public static Participant fromParticipantRequestToParticipant(ParticipantRequest participantRequest) {
+        return new Participant(null, participantRequest.getName(), participantRequest.getJob(), participantRequest.getDateOfBirth(), participantRequest.getDebt(), true, new HashSet<>(), new HashSet<>(), new HashSet<>());
+    }
+
 
 
 }

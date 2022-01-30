@@ -6,6 +6,7 @@ import com.itmo.squid.domain.Stage;
 import com.itmo.squid.domain.StageStatus;
 import com.itmo.squid.dto.KillRespDto;
 import com.itmo.squid.dto.MappingUtils;
+import com.itmo.squid.dto.ParticipantReqDto;
 import com.itmo.squid.dto.ParticipantRespDto;
 import com.itmo.squid.exception.BadRequestException;
 import com.itmo.squid.exception.ResourceNotFoundException;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@CrossOrigin()
 @RestController
 @RequestMapping(value = "participant")
 public class ParticipantController {
@@ -40,6 +42,12 @@ public class ParticipantController {
     }
 
 
+    @PostMapping
+    public ParticipantRespDto create(@RequestBody ParticipantReqDto participant) {
+        return MappingUtils.fromParticipantEntityToDto(participantRepo.save(MappingUtils.fromParticipantDtoToEntity(participant)));
+    }
+
+
     @GetMapping("{id}")
     public ParticipantRespDto getOne(@PathVariable Long id) {
         return participantRepo.findById(id).map(MappingUtils::fromParticipantEntityToDto).orElseThrow(ResourceNotFoundException::new);
@@ -47,14 +55,12 @@ public class ParticipantController {
 
 
     @PutMapping("{id}/kill")
-    public KillRespDto kill(@PathVariable Long id, @RequestBody Map<String, String> description) {
-        Stage stage = stageRepo.findStageByStatusEquals(StageStatus.CONTINUOUS).orElseThrow(ResourceNotFoundException::new);
-        String descr = Optional.ofNullable(description.get("description")).orElseThrow(BadRequestException::new);
+    public KillRespDto kill(@PathVariable Long id) {
+        Stage stage = stageRepo.findStageByStatusEquals(StageStatus.CONTINUOUS).orElseThrow(BadRequestException::new);
         Participant participant = participantRepo.findParticipantByIdAndIsAlive(id, true).orElseThrow(BadRequestException::new);
-
         participant.setAlive(false);
         stage.setAmountOfDeath(stage.getAmountOfDeath() + 1);
-        deathRepo.save(new Death(null, participant, stage, descr));
+        deathRepo.save(new Death(null, participant, stage, ""));
         stageRepo.save(stage);
         ParticipantRespDto participantRespDto = MappingUtils.fromParticipantEntityToDto(participantRepo.save(participant));
         return new KillRespDto(participantRespDto, stage.getId());

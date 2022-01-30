@@ -7,21 +7,20 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "participant")
+@Table(name = "participant_req")
 @Data
 @EqualsAndHashCode(of = {"id"})
-public class Participant {
+public class ParticipantRequest {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
 
     @NotNull
     @Column
@@ -39,22 +38,13 @@ public class Participant {
     @NotNull
     private Long debt;
 
-
     @Column
     @NotNull
-    private boolean isAlive;
+    @Enumerated(value = EnumType.STRING)
+    private ReqType type;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "participant_in_team",
-            joinColumns = @JoinColumn(name = "participant_id"),
-            inverseJoinColumns = @JoinColumn(name = "team_id")
-    )
-    private Set<TeamOnStage> teams = new HashSet<>();
-
-    @OneToMany(mappedBy = "participant", fetch = FetchType.LAZY)
-    private Set<Bet> bets = new HashSet<>();
-
-    @OneToMany(mappedBy = "participant", fetch = FetchType.LAZY)
-    private Set<MarketGood> goods = new HashSet<>();
+    @OneToOne(optional = false, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
 }

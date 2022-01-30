@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+
+<body>
+
+<p>Test</p>
+
+<script>
+
+    function equals(element, index, array) {
+        return element === array[index];
+    }
+
+
+    function test() {
+        let a = [{id: 1, name: 'masha'}, {id: 2, name: 'santa'}, {id: 3, name: 'misha'}, {id: 4, name: 'sasha'}];
+        let number = a.find((el) => el.id === 1 && el.name === 'masha');
+        let strings = a.map((v) => JSON.stringify(v));
+        strings.forEach((e) => console.log(e));
+        let obj = strings.map((s) => JSON.parse(s));
+        obj.forEach((e) => console.log(e.id + " " + e.name));
+    }
+
+
+    test();
+</script>
+
+<p>Test</p>
+
+</body>
+
+</html>
